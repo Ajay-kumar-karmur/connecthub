@@ -7,6 +7,7 @@ from sqlalchemy.orm import Session
 
 from app import models
 from app.db import Base, engine, get_db
+from app.routes_mock import router as mock_router
 from app.schemas import EmployeeIn, EmployeeOut
 
 
@@ -17,6 +18,7 @@ async def lifespan(app: FastAPI):
 
 
 app = FastAPI(title="ConnectHub", lifespan=lifespan)
+app.include_router(mock_router)
 
 
 @app.get("/health")
@@ -55,3 +57,4 @@ def list_events(db: Session = Depends(get_db)):
         {"id": e.id, "type": e.type, "status": e.status, "payload": e.payload}
         for e in rows
     ]
+
