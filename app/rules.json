@@ -1,0 +1,15 @@
+[
+  {
+    "when": {"event": "employee.created", "department": "Engineering"},
+    "then": [
+      {"app": "github", "action": "add_to_team", "args": {"team": "backend"}},
+      {"app": "google", "action": "create_account"}
+    ]
+  },
+  {
+    "when": {"event": "employee.created", "department": "Sales"},
+    "then": [
+      {"app": "google", "action": "create_account"}
+    ]
+  }
+]

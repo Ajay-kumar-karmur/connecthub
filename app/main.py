@@ -5,7 +5,8 @@ from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
-from app import models
+from app import models, worker
+from app.config import settings
 from app.db import Base, engine, get_db
 from app.routes_mock import router as mock_router
 from app.schemas import EmployeeIn, EmployeeOut
@@ -14,7 +15,10 @@ from app.schemas import EmployeeIn, EmployeeOut
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     Base.metadata.create_all(engine)
+    if settings.worker_enabled:
+        worker.start()
     yield
+    worker.stop()
 
 
 app = FastAPI(title="ConnectHub", lifespan=lifespan)
@@ -58,3 +62,26 @@ def list_events(db: Session = Depends(get_db)):
         for e in rows
     ]
 
+
+@app.get("/deliveries")
+def list_deliveries(db: Session = Depends(get_db)):
+    rows = db.scalars(select(models.Delivery).order_by(models.Delivery.id)).all()
+    return [
+        {
+            "id": d.id,
+            "event_id": d.event_id,
+            "app": d.app,
+            "action": d.action,
+            "status": d.status,
+            "attempts": d.attempts,
+            "last_error": d.last_error,
+            "result": d.result,
+        }
+        for d in rows
+    ]
+
+
+@app.post("/worker/run-once")
+def worker_run_once():
+    """Run one worker pass by hand (handy for demos and debugging)."""
+    return worker.run_once()
