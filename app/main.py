@@ -9,6 +9,7 @@ from app import models, worker
 from app.config import settings
 from app.db import Base, engine, get_db
 from app.routes_mock import router as mock_router
+from app.routes_ops import router as ops_router
 from app.schemas import EmployeeIn, EmployeeOut
 
 
@@ -23,6 +24,7 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(title="ConnectHub", lifespan=lifespan)
 app.include_router(mock_router)
+app.include_router(ops_router)
 
 
 @app.get("/health")
@@ -85,3 +87,4 @@ def list_deliveries(db: Session = Depends(get_db)):
 def worker_run_once():
     """Run one worker pass by hand (handy for demos and debugging)."""
     return worker.run_once()
+

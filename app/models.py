@@ -47,3 +47,16 @@ class Delivery(Base):
     last_error: Mapped[str | None] = mapped_column(Text, nullable=True)
     result: Mapped[dict | None] = mapped_column(JSON, nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
+
+
+class AppState(Base):
+    """Circuit breaker memory: one row per external app."""
+
+    __tablename__ = "app_state"
+
+    app: Mapped[str] = mapped_column(String(50), primary_key=True)
+    consecutive_failures: Mapped[int] = mapped_column(default=0)
+    paused_until: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True), nullable=True
+    )
+    alerted: Mapped[bool] = mapped_column(default=False)
